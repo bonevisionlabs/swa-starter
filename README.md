@@ -129,10 +129,16 @@ The GitHub Actions workflow (`.github/workflows/azure-swa.yml`) provides:
 
 ### Replace the branding
 
-1. Edit `site/index.html` — update app name, hero text, feature cards
-2. Edit `site/login.html` — update app name, badge text
+1. Edit `site/index.html` — update app name, hero text, feature cards, stats, CTA copy
+2. Edit `site/login.html` — update app name, badge text, redirect URIs
 3. Replace `YourApp` with your brand in both nav bars
-4. Update the theme colors in the CSS custom properties (`:root` and `[data-theme="light"]`)
+4. Update theme colors in the CSS custom properties (`:root` and `[data-theme="light"]`):
+   - `--accent` — primary accent (cyan dark / teal light)
+   - `--accent-secondary` — secondary accent (electric blue)
+   - `--accent-tertiary` — tertiary accent (hot pink, used sparingly)
+   - `--bg-deep` — background color
+   - `--text-primary` / `--text-muted` — text colors
+5. Swap fonts by changing the Google Fonts `<link>` URL and the `--font-display`, `--font-body`, `--font-mono` variables (defaults: Space Grotesk, Inter, JetBrains Mono)
 
 ### Add a build step
 

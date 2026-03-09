@@ -4,62 +4,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In</title>
+    <title>Sign In — YourApp</title>
 
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Early theme detection -->
     <script>
-        if (localStorage.getItem('app-theme') === 'dark') {
+        if (localStorage.getItem('swa-theme') === 'dark') {
             document.documentElement.removeAttribute('data-theme');
         }
     </script>
 
     <style>
+        /* ========================================
+           DESIGN TOKENS
+           ======================================== */
         :root {
-            --bg: #0A0A0F;
-            --bg-card: rgba(255,255,255,0.03);
-            --text: #E8E6D9;
+            --bg-deep: #060608;
+            --bg-surface: rgba(255,255,255,0.03);
+            --text-primary: #E8E6D9;
             --text-muted: rgba(255,255,255,0.5);
             --accent: #00FFD1;
-            --accent-hover: rgba(0,255,209,0.1);
+            --accent-dim: rgba(0,255,209,0.1);
+            --accent-glow: rgba(0,255,209,0.15);
             --border: rgba(255,255,255,0.08);
+            --glass: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.06);
             --error: #FF2E93;
             --error-bg: rgba(255,46,147,0.08);
-            --font: 'Inter', system-ui, sans-serif;
+
+            --font-display: 'Space Grotesk', system-ui, sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         [data-theme="light"] {
-            --bg: #F5F3EE;
-            --bg-card: #FFFFFF;
-            --text: #1A1A1F;
+            --bg-deep: #F5F3EE;
+            --bg-surface: #FFFFFF;
+            --text-primary: #1A1A1F;
             --text-muted: rgba(0,0,0,0.5);
             --accent: #00A67E;
-            --accent-hover: rgba(0,166,126,0.08);
+            --accent-dim: rgba(0,166,126,0.08);
+            --accent-glow: rgba(0,166,126,0.12);
             --border: rgba(0,0,0,0.08);
+            --glass: rgba(255,255,255,0.6);
+            --glass-border: rgba(0,0,0,0.06);
             --error: #D4236A;
             --error-bg: rgba(212,35,106,0.06);
         }
 
+        /* ========================================
+           RESET & BASE
+           ======================================== */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html { height: 100%; }
 
         body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--font);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: var(--font-body);
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             min-height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 2rem;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* === NAV === */
+        /* Grain overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* Cursor glow */
+        #cursor-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+            mix-blend-mode: screen;
+            transform: translate(-50%, -50%);
+            will-change: left, top;
+        }
+
+        [data-theme="light"] #cursor-glow {
+            mix-blend-mode: multiply;
+            background: radial-gradient(circle, rgba(0,166,126,0.06) 0%, transparent 60%);
+        }
+
+        /* ========================================
+           NAVIGATION
+           ======================================== */
         .nav {
             position: fixed;
             top: 0;
@@ -70,38 +124,51 @@
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.04) 100%);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+        }
+
+        [data-theme="light"] .nav {
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
         }
 
         .nav-brand {
+            font-family: var(--font-display);
             font-weight: 700;
             font-size: 1rem;
             color: var(--accent);
             text-decoration: none;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 20px var(--accent-glow);
         }
+
+        [data-theme="light"] .nav-brand { text-shadow: none; }
 
         .nav-right {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.5rem;
         }
 
         .nav-back {
             font-size: 0.8rem;
             color: var(--text-muted);
             text-decoration: none;
-            padding: 0.3rem 0.6rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 6px;
-            transition: all 0.2s;
+            transition: all 0.3s var(--ease-smooth);
         }
 
         .nav-back:hover {
-            color: var(--text);
-            background: var(--accent-hover);
+            color: var(--text-primary);
+            background: var(--accent-dim);
         }
 
-        /* === THEME TOGGLE === */
+        /* Theme toggle */
         .theme-toggle {
             width: 32px;
             height: 32px;
@@ -116,17 +183,23 @@
             transition: all 0.2s;
         }
 
-        .theme-toggle:hover { color: var(--accent); background: var(--accent-hover); }
+        .theme-toggle:hover { color: var(--accent); background: var(--accent-dim); }
         .theme-toggle svg { width: 18px; height: 18px; }
         .icon-moon { display: block; }
         .icon-sun { display: none; }
         [data-theme="light"] .icon-moon { display: none; }
         [data-theme="light"] .icon-sun { display: block; }
 
-        /* === LOGIN CARD === */
+        /* ========================================
+           LOGIN CARD
+           ======================================== */
         .login-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
+            position: relative;
+            z-index: 2;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 16px;
             padding: 2.5rem;
             max-width: 420px;
@@ -135,26 +208,32 @@
         }
 
         [data-theme="light"] .login-card {
+            background: var(--bg-surface);
             box-shadow: 0 24px 80px rgba(0,0,0,0.08);
         }
 
         .login-badge {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            background: var(--accent-hover);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            background: var(--accent-dim);
             color: var(--accent);
-            border: 1px solid rgba(0,255,209,0.2);
+            border: 1px solid rgba(0,255,209,0.15);
             margin-bottom: 1.5rem;
         }
 
-        [data-theme="light"] .login-badge { border-color: rgba(0,166,126,0.2); }
+        [data-theme="light"] .login-badge { border-color: rgba(0,166,126,0.15); }
 
         .login-title {
+            font-family: var(--font-display);
             font-size: 1.5rem;
             font-weight: 700;
+            letter-spacing: -0.03em;
             margin-bottom: 0.25rem;
         }
 
@@ -164,7 +243,9 @@
             margin-bottom: 2rem;
         }
 
-        /* === ERROR BANNER === */
+        /* ========================================
+           ERROR BANNER
+           ======================================== */
         .error-banner {
             display: none;
             background: var(--error-bg);
@@ -176,14 +257,14 @@
         }
 
         [data-theme="light"] .error-banner { border-color: rgba(212,35,106,0.15); }
-
         .error-banner.visible { display: block; }
 
         .error-banner strong {
             display: block;
-            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             color: var(--error);
             margin-bottom: 0.3rem;
         }
@@ -194,7 +275,11 @@
             line-height: 1.5;
         }
 
-        /* === AUTH BUTTONS === */
+        .error-banner a { color: var(--accent); text-decoration: none; }
+
+        /* ========================================
+           AUTH BUTTONS
+           ======================================== */
         .auth-buttons {
             display: flex;
             flex-direction: column;
@@ -208,41 +293,93 @@
             justify-content: center;
             width: 100%;
             padding: 0.85rem 1.5rem;
-            background: var(--bg-card);
+            background: var(--glass);
             border: 1px solid var(--border);
             border-radius: 10px;
-            font-family: var(--font);
+            font-family: var(--font-body);
             font-size: 0.85rem;
             font-weight: 500;
-            color: var(--text);
+            color: var(--text-primary);
             text-decoration: none;
-            transition: all 0.2s;
+            transition: all 0.3s var(--ease-smooth);
         }
+
+        [data-theme="light"] .auth-btn { background: var(--bg-surface); }
 
         .auth-btn:hover {
             border-color: var(--accent);
-            background: var(--accent-hover);
-            transform: translateY(-1px);
+            background: var(--accent-dim);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--accent-glow);
         }
 
         .auth-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-        /* === FOOTER === */
-        .login-footer {
-            margin-top: 2rem;
-            font-size: 0.7rem;
-            color: var(--text-muted);
+        /* ========================================
+           DIVIDER
+           ======================================== */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
         }
 
-        /* === RESPONSIVE === */
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* ========================================
+           AGREEMENT & FOOTER
+           ======================================== */
+        .agreement {
+            margin-top: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+            line-height: 1.6;
+        }
+
+        .agreement a { color: var(--accent); text-decoration: none; }
+
+        .login-footer {
+            position: relative;
+            z-index: 2;
+            margin-top: 2rem;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
         @media (max-width: 768px) {
-            .nav { padding: 0.75rem 1.5rem; }
+            .nav { padding: 0.6rem 1.5rem; }
             .login-card { padding: 2rem 1.5rem; }
+            #cursor-glow { display: none; }
         }
     </style>
 </head>
 
 <body>
+    <!-- Cursor glow -->
+    <div id="cursor-glow"></div>
+
+    <!-- Navigation -->
     <nav class="nav">
         <a href="/" class="nav-brand">YourApp</a>
         <div class="nav-right">
@@ -254,6 +391,7 @@
         </div>
     </nav>
 
+    <!-- Login Card -->
     <div class="login-card">
         <span class="login-badge">Sign In Required</span>
 
@@ -263,7 +401,7 @@
         </div>
 
         <div class="login-title">Welcome back</div>
-        <div class="login-subtitle">Sign in to continue</div>
+        <div class="login-subtitle">Sign in to continue to your account</div>
 
         <div class="auth-buttons">
             <!-- Azure SWA built-in auth providers -->
@@ -293,10 +431,18 @@
                 Sign in with Google
             </a>
         </div>
+
+        <div class="divider"><span>or</span></div>
+
+        <div class="agreement">
+            By signing in, you agree to our terms of service and privacy policy.
+            <br>Need access? <a href="/">Request an invitation</a>.
+        </div>
     </div>
 
     <div class="login-footer">Powered by Azure Static Web Apps</div>
 
+    <!-- Scripts -->
     <script>
         // Show error banner if redirected with ?error=forbidden
         if (new URLSearchParams(window.location.search).get('error') === 'forbidden') {
@@ -310,12 +456,23 @@
             const isLight = html.hasAttribute('data-theme');
             if (isLight) {
                 html.removeAttribute('data-theme');
-                localStorage.setItem('app-theme', 'dark');
+                localStorage.setItem('swa-theme', 'dark');
             } else {
                 html.setAttribute('data-theme', 'light');
-                localStorage.setItem('app-theme', 'light');
+                localStorage.setItem('swa-theme', 'light');
             }
         });
+
+        // Cursor glow
+        const glow = document.getElementById('cursor-glow');
+        if (window.matchMedia('(pointer: fine)').matches) {
+            window.addEventListener('mousemove', (e) => {
+                glow.style.left = e.clientX + 'px';
+                glow.style.top = e.clientY + 'px';
+            });
+        } else {
+            glow.style.display = 'none';
+        }
     </script>
 </body>
 

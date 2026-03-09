@@ -4,53 +4,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your App — Landing Page</title>
+    <title>Azure SWA Starter — Ship Secure Sites Fast</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Early theme detection (prevents flash) -->
     <script>
-        if (localStorage.getItem('app-theme') === 'dark') {
+        if (localStorage.getItem('swa-theme') === 'dark') {
             document.documentElement.removeAttribute('data-theme');
         }
     </script>
 
     <style>
+        /* ========================================
+           DESIGN TOKENS
+           ======================================== */
         :root {
-            --bg: #0A0A0F;
-            --bg-card: rgba(255,255,255,0.03);
-            --text: #E8E6D9;
+            --bg-deep: #060608;
+            --bg-surface: rgba(255,255,255,0.03);
+            --text-primary: #E8E6D9;
             --text-muted: rgba(255,255,255,0.5);
             --accent: #00FFD1;
-            --accent-hover: rgba(0,255,209,0.1);
+            --accent-dim: rgba(0,255,209,0.1);
+            --accent-glow: rgba(0,255,209,0.15);
+            --accent-secondary: #4D4DFF;
+            --accent-tertiary: #FF2E93;
             --border: rgba(255,255,255,0.08);
-            --font: 'Inter', system-ui, sans-serif;
+            --border-hover: rgba(255,255,255,0.15);
+            --glass: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.06);
+
+            --font-display: 'Space Grotesk', system-ui, sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
         }
 
         [data-theme="light"] {
-            --bg: #F5F3EE;
-            --bg-card: #FFFFFF;
-            --text: #1A1A1F;
+            --bg-deep: #F5F3EE;
+            --bg-surface: #FFFFFF;
+            --text-primary: #1A1A1F;
             --text-muted: rgba(0,0,0,0.5);
             --accent: #00A67E;
-            --accent-hover: rgba(0,166,126,0.08);
+            --accent-dim: rgba(0,166,126,0.08);
+            --accent-glow: rgba(0,166,126,0.12);
+            --accent-secondary: #3D3DCC;
+            --accent-tertiary: #D4236A;
             --border: rgba(0,0,0,0.08);
+            --border-hover: rgba(0,0,0,0.15);
+            --glass: rgba(255,255,255,0.6);
+            --glass-border: rgba(0,0,0,0.06);
         }
 
+        /* ========================================
+           RESET & BASE
+           ======================================== */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html { scroll-behavior: smooth; }
+
         body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--font);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: var(--font-body);
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* === NAV === */
+        /* ========================================
+           GRAIN OVERLAY
+           ======================================== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* ========================================
+           CURSOR GLOW
+           ======================================== */
+        #cursor-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+            mix-blend-mode: screen;
+            transform: translate(-50%, -50%);
+            will-change: left, top;
+            transition: opacity 0.3s;
+        }
+
+        [data-theme="light"] #cursor-glow {
+            mix-blend-mode: multiply;
+            background: radial-gradient(circle, rgba(0,166,126,0.06) 0%, transparent 60%);
+        }
+
+        /* ========================================
+           ANIMATED HERO BACKGROUND
+           ======================================== */
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .hero-bg .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            will-change: transform;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--accent);
+            top: -20%;
+            left: -10%;
+            animation: float-1 20s ease-in-out infinite;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-secondary);
+            top: 10%;
+            right: -15%;
+            animation: float-2 25s ease-in-out infinite;
+        }
+
+        .blob-3 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-tertiary);
+            bottom: -10%;
+            left: 30%;
+            animation: float-3 22s ease-in-out infinite;
+        }
+
+        [data-theme="light"] .blob { opacity: 0.12; }
+
+        @keyframes float-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(100px, 50px) scale(1.1); }
+            66% { transform: translate(-50px, 80px) scale(0.95); }
+        }
+
+        @keyframes float-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-80px, 60px) scale(0.9); }
+            66% { transform: translate(40px, -40px) scale(1.05); }
+        }
+
+        @keyframes float-3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(60px, -50px) scale(1.08); }
+            66% { transform: translate(-70px, 30px) scale(0.92); }
+        }
+
+        /* ========================================
+           NAVIGATION
+           ======================================== */
         .nav {
             position: fixed;
             top: 0;
@@ -63,33 +200,75 @@
             z-index: 1000;
             backdrop-filter: blur(20px) saturate(1.4);
             -webkit-backdrop-filter: blur(20px) saturate(1.4);
-            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.04) 100%);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+        }
+
+        [data-theme="light"] .nav {
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+
+        .nav::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+            pointer-events: none;
         }
 
         .nav-brand {
+            font-family: var(--font-display);
             font-weight: 700;
             font-size: 1rem;
             color: var(--accent);
             text-decoration: none;
-            letter-spacing: 0.02em;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 20px var(--accent-glow);
         }
 
-        .nav-links {
+        [data-theme="light"] .nav-brand { text-shadow: none; }
+
+        .nav-menu {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 0.25rem;
         }
 
-        .nav-links a {
-            font-size: 0.85rem;
+        .nav-link {
+            font-size: 0.8rem;
+            font-weight: 400;
             color: var(--text-muted);
             text-decoration: none;
-            transition: color 0.2s;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            letter-spacing: 0.02em;
+            transition: all 0.3s var(--ease-smooth);
         }
 
-        .nav-links a:hover { color: var(--text); }
+        .nav-link:hover {
+            color: var(--text-primary);
+            background: var(--accent-dim);
+        }
 
-        /* === THEME TOGGLE === */
+        .nav-link.cta {
+            color: var(--accent);
+            border: 1px solid rgba(0,255,209,0.2);
+        }
+
+        .nav-link.cta:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        [data-theme="light"] .nav-link.cta { border-color: rgba(0,166,126,0.2); }
+        [data-theme="light"] .nav-link.cta:hover { border-color: var(--accent); box-shadow: none; }
+
+        /* Theme toggle */
         .theme-toggle {
             width: 32px;
             height: 32px;
@@ -102,143 +281,592 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            margin-left: 0.5rem;
         }
 
         .theme-toggle:hover {
             color: var(--accent);
-            background: var(--accent-hover);
+            background: var(--accent-dim);
         }
 
         .theme-toggle svg { width: 18px; height: 18px; }
-
         .icon-moon { display: block; }
         .icon-sun { display: none; }
         [data-theme="light"] .icon-moon { display: none; }
         [data-theme="light"] .icon-sun { display: block; }
 
-        /* === HERO === */
+        /* ========================================
+           SCROLL REVEAL
+           ======================================== */
+        [data-reveal] {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s var(--ease-smooth), transform 0.8s var(--ease-smooth);
+        }
+
+        [data-reveal].visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ========================================
+           SECTION LAYOUT
+           ======================================== */
+        .section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 6rem 2rem;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 550px;
+            line-height: 1.7;
+        }
+
+        /* ========================================
+           HERO
+           ======================================== */
         .hero {
+            position: relative;
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             padding: 6rem 2rem 4rem;
         }
 
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+        }
+
         .hero-badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 1rem;
             border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            background: var(--accent-hover);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            background: var(--accent-dim);
             color: var(--accent);
-            border: 1px solid rgba(0,255,209,0.2);
+            border: 1px solid rgba(0,255,209,0.15);
             margin-bottom: 2rem;
         }
 
-        [data-theme="light"] .hero-badge {
-            border-color: rgba(0,166,126,0.2);
+        [data-theme="light"] .hero-badge { border-color: rgba(0,166,126,0.15); }
+
+        .hero-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
             font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 1rem;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+            margin-bottom: 1.5rem;
         }
 
-        .hero p {
-            font-size: 1.1rem;
+        .hero h1 .accent { color: var(--accent); }
+
+        .hero-sub {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
             color: var(--text-muted);
-            max-width: 600px;
-            margin-bottom: 2rem;
+            border-left: 2px solid var(--accent);
+            padding-left: 1.25rem;
+            margin: 0 auto 2.5rem;
+            text-align: left;
+            max-width: 460px;
+            line-height: 1.7;
+            letter-spacing: 0.01em;
         }
 
-        .hero-cta {
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            position: relative;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
             padding: 0.85rem 2rem;
-            background: var(--accent);
-            color: #000;
-            border: none;
-            border-radius: 10px;
-            font-family: var(--font);
-            font-size: 0.9rem;
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.2s;
+            letter-spacing: 0.02em;
+            overflow: hidden;
+            transition: all 0.4s var(--ease-smooth);
+            cursor: pointer;
         }
 
-        .hero-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0,255,209,0.2);
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent);
+            transform: translateX(-101%);
+            transition: transform 0.4s var(--ease-smooth);
+            z-index: -1;
         }
 
-        /* === FEATURES === */
-        .features {
-            padding: 4rem 2rem 6rem;
-            max-width: 1000px;
+        .btn-primary:hover {
+            color: var(--bg-deep);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .btn-primary:hover::before { transform: translateX(0); }
+
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.5rem;
+            color: var(--text-muted);
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .btn-ghost:hover { color: var(--text-primary); }
+        .btn-ghost svg { width: 16px; height: 16px; }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            opacity: 0.5;
+            animation: scroll-bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes scroll-bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+
+        .scroll-hint svg { width: 16px; height: 16px; }
+
+        /* ========================================
+           STATS ROW
+           ======================================== */
+        .stats {
+            max-width: 900px;
             margin: 0 auto;
+            padding: 0 2rem 4rem;
+            display: flex;
+            justify-content: center;
+            gap: 0;
         }
 
-        .features h2 {
+        .stat-item {
+            flex: 1;
             text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 3rem;
+            padding: 1.5rem 1rem;
+            border-right: 1px solid var(--border);
         }
 
+        .stat-item:last-child { border-right: none; }
+
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 0.4rem;
+        }
+
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* ========================================
+           FEATURES
+           ======================================== */
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-top: 3rem;
         }
 
         .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 4px;
+            padding: 2rem 1.75rem;
+            transition: all 0.4s var(--ease-smooth);
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: translateY(-6px);
+        }
+
+        .feature-index {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            color: var(--accent-secondary);
+            margin-bottom: 1rem;
         }
 
         .feature-card h3 {
+            font-family: var(--font-display);
             font-size: 1rem;
-            margin-bottom: 0.5rem;
-            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+            letter-spacing: -0.01em;
         }
 
         .feature-card p {
             font-size: 0.85rem;
             color: var(--text-muted);
+            line-height: 1.6;
         }
 
-        /* === FOOTER === */
-        footer {
+        /* ========================================
+           HOW IT WORKS
+           ======================================== */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 22px;
+            left: 22px;
+            right: 22px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary), var(--border));
+            z-index: 0;
+        }
+
+        .step {
+            position: relative;
+            z-index: 1;
             text-align: center;
-            padding: 2rem;
+        }
+
+        .step-dot {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--bg-deep);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-family: var(--font-mono);
             font-size: 0.75rem;
             color: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .step:first-child .step-dot {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .step h4 {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .step p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ========================================
+           SECURITY SHOWCASE
+           ======================================== */
+        .security-split {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 3rem;
+            align-items: start;
+            margin-top: 3rem;
+        }
+
+        .code-block {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            line-height: 1.7;
+        }
+
+        [data-theme="light"] .code-block {
+            background: #1A1A1F;
+            color: #E8E6D9;
+        }
+
+        .code-header {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        [data-theme="light"] .code-header {
+            color: rgba(255,255,255,0.4);
+            border-bottom-color: rgba(255,255,255,0.06);
+        }
+
+        .code-header .dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .code-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .code-header .dot:nth-child(1) { background: #FF5F56; }
+        .code-header .dot:nth-child(2) { background: #FFBD2E; }
+        .code-header .dot:nth-child(3) { background: #27C93F; }
+
+        .code-body {
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+        }
+
+        .code-body .key { color: #00FFD1; }
+        .code-body .str { color: #FF2E93; }
+        .code-body .punct { color: rgba(255,255,255,0.3); }
+
+        .security-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .security-list li {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .security-list .check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            border: 1px solid rgba(0,255,209,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: var(--accent);
+        }
+
+        .security-list .check svg { width: 10px; height: 10px; }
+
+        .security-list strong {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+        }
+
+        .security-list span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ========================================
+           CTA
+           ======================================== */
+        .cta {
+            text-align: center;
+            padding: 8rem 2rem;
+        }
+
+        .cta h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.04em;
+            margin-bottom: 1rem;
+        }
+
+        .cta h2 .accent {
+            color: var(--accent);
+            text-shadow: 0 0 40px var(--accent-glow);
+        }
+
+        [data-theme="light"] .cta h2 .accent { text-shadow: none; }
+
+        .cta p {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            max-width: 500px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        .cta-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* ========================================
+           FOOTER
+           ======================================== */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
             border-top: 1px solid var(--border);
         }
 
-        /* === RESPONSIVE === */
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        @media (max-width: 1024px) {
+            .feature-grid { grid-template-columns: repeat(2, 1fr); }
+            .security-split { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 768px) {
-            .nav { padding: 0.75rem 1.5rem; }
-            .nav-links a:not(.theme-toggle) { display: none; }
+            .nav { padding: 0.6rem 1.5rem; }
+            .nav-link:not(.cta) { display: none; }
             .hero { padding: 5rem 1.5rem 3rem; }
+            .hero h1 { font-size: clamp(2rem, 8vw, 3rem); }
+            .stats { flex-direction: column; gap: 0; }
+            .stat-item { border-right: none; border-bottom: 1px solid var(--border); padding: 1rem; }
+            .stat-item:last-child { border-bottom: none; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .steps { grid-template-columns: 1fr; gap: 1.5rem; }
+            .steps::before { display: none; }
+            .section { padding: 4rem 1.5rem; }
+            .scroll-hint { display: none; }
+            #cursor-glow { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.8rem; }
+            .nav { padding: 0.5rem 1rem; }
+            .hero-actions { flex-direction: column; }
         }
     </style>
 </head>
 
 <body>
+    <!-- Cursor glow -->
+    <div id="cursor-glow"></div>
+
+    <!-- Navigation -->
     <nav class="nav">
         <a href="/" class="nav-brand">YourApp</a>
-        <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="/login">Sign In</a>
+        <div class="nav-menu">
+            <a href="#features" class="nav-link" data-target="features">Features</a>
+            <a href="#security" class="nav-link" data-target="security">Security</a>
+            <a href="#deploy" class="nav-link" data-target="deploy">Deploy</a>
+            <a href="/login" class="nav-link cta">Sign In</a>
             <button class="theme-toggle" title="Toggle theme" aria-label="Toggle light/dark mode">
                 <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -250,61 +878,247 @@
         </div>
     </nav>
 
+    <!-- Hero -->
     <section class="hero">
-        <span class="hero-badge">Open Source Template</span>
-        <h1>Ship your site to<br>Azure in minutes</h1>
-        <p>A production-ready starter for Azure Static Web Apps with security headers, SSO auth, dark/light mode, and CI/CD — all pre-configured.</p>
-        <a href="https://github.com/bonevisionlabs/azure-swa-starter" class="hero-cta">
-            Get Started
-        </a>
+        <div class="hero-bg">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+        <div class="hero-content" data-reveal>
+            <span class="hero-badge">Open Source Template</span>
+            <h1>Ship your site to Azure.<br><span class="accent">Securely.</span></h1>
+            <p class="hero-sub">Production-ready Static Web App starter with security headers, SSO authentication, and CI/CD pre-configured. No build tools needed.</p>
+            <div class="hero-actions">
+                <a href="https://github.com/bonevisionlabs/azure-swa-starter" class="btn-primary">
+                    Get Started
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <a href="https://github.com/bonevisionlabs/azure-swa-starter" class="btn-ghost">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+        <div class="scroll-hint">
+            <span>Scroll</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
     </section>
 
-    <section class="features" id="features">
-        <h2>What's Included</h2>
+    <!-- Stats -->
+    <div class="stats" data-reveal>
+        <div class="stat-item">
+            <div class="stat-number">6</div>
+            <div class="stat-label">Security Headers</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">3</div>
+            <div class="stat-label">Auth Providers</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">&lt;2m</div>
+            <div class="stat-label">Deploy Time</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Config Build Steps</div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <section class="section" id="features">
+        <div data-reveal>
+            <div class="section-label">// Features</div>
+            <div class="section-title">Everything you need,<br>nothing you don't</div>
+            <div class="section-subtitle">Production defaults that take hours to configure manually. Fork, deploy, customize.</div>
+        </div>
         <div class="feature-grid">
-            <div class="feature-card">
+            <div class="feature-card" data-reveal>
+                <div class="feature-index">01</div>
                 <h3>Security Headers</h3>
-                <p>HSTS, CSP, X-Frame-Options, Referrer-Policy, and Permissions-Policy pre-configured. Blocks sensitive file types (.py, .env, .pem) by default.</p>
+                <p>HSTS, CSP, X-Frame-Options, Referrer-Policy, and Permissions-Policy pre-configured. Blocks sensitive file types by default.</p>
             </div>
-            <div class="feature-card">
+            <div class="feature-card" data-reveal>
+                <div class="feature-index">02</div>
                 <h3>SSO Authentication</h3>
                 <p>Sign in with Microsoft, GitHub, or Google via Azure SWA's built-in auth. Role-based access control for protected routes.</p>
             </div>
-            <div class="feature-card">
+            <div class="feature-card" data-reveal>
+                <div class="feature-index">03</div>
                 <h3>CI/CD Pipeline</h3>
-                <p>GitHub Actions workflow that deploys on push to main. Path-filtered triggers so unrelated changes don't redeploy. PR preview environments included.</p>
+                <p>GitHub Actions workflow deploys on push to main. Path-filtered triggers. PR preview environments included.</p>
             </div>
-            <div class="feature-card">
-                <h3>Dark/Light Mode</h3>
-                <p>Theme toggle with localStorage persistence and flash-free loading. CSS custom properties make it trivial to customize your palette.</p>
+            <div class="feature-card" data-reveal>
+                <div class="feature-index">04</div>
+                <h3>Dark / Light Mode</h3>
+                <p>Theme toggle with localStorage persistence and flash-free loading. CSS custom properties make palette changes trivial.</p>
             </div>
-            <div class="feature-card">
+            <div class="feature-card" data-reveal>
+                <div class="feature-index">05</div>
                 <h3>Route Rules</h3>
-                <p>Clean URLs, SPA fallback, auth redirects (401 &rarr; /login), and file blocking rules ready to customize for your app.</p>
+                <p>Clean URLs, SPA fallback, auth redirects, and file blocking rules ready to customize for your app.</p>
             </div>
-            <div class="feature-card">
-                <h3>Azure Functions API</h3>
-                <p>Optional api/ directory for serverless backend functions. Pre-configured in the workflow and route rules.</p>
+            <div class="feature-card" data-reveal>
+                <div class="feature-index">06</div>
+                <h3>Serverless API</h3>
+                <p>Optional Azure Functions backend in the api/ directory. Pre-configured in the workflow and route rules.</p>
             </div>
         </div>
     </section>
 
+    <!-- How It Works -->
+    <section class="section" id="deploy">
+        <div data-reveal>
+            <div class="section-label">// Deploy</div>
+            <div class="section-title">Four steps to production</div>
+            <div class="section-subtitle">No local tooling required. Deploy directly from GitHub.</div>
+        </div>
+        <div class="steps" data-reveal>
+            <div class="step">
+                <div class="step-dot">1</div>
+                <h4>Fork the template</h4>
+                <p>Clone or use GitHub's template button</p>
+            </div>
+            <div class="step">
+                <div class="step-dot">2</div>
+                <h4>Create Azure resource</h4>
+                <p>Static Web App, Free plan, point to your repo</p>
+            </div>
+            <div class="step">
+                <div class="step-dot">3</div>
+                <h4>Verify secret</h4>
+                <p>Confirm the API token name matches the workflow</p>
+            </div>
+            <div class="step">
+                <div class="step-dot">4</div>
+                <h4>Push to main</h4>
+                <p>GitHub Actions deploys automatically</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security -->
+    <section class="section" id="security">
+        <div data-reveal>
+            <div class="section-label">// Security</div>
+            <div class="section-title">Hardened by default</div>
+            <div class="section-subtitle">Every response includes production-grade security headers. Configured in one JSON file.</div>
+        </div>
+        <div class="security-split" data-reveal>
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                    staticwebapp.config.json
+                </div>
+                <div class="code-body"><pre><span class="punct">{</span>
+  <span class="key">"globalHeaders"</span><span class="punct">:</span> <span class="punct">{</span>
+    <span class="key">"Strict-Transport-Security"</span><span class="punct">:</span> <span class="str">"max-age=31536000"</span><span class="punct">,</span>
+    <span class="key">"X-Content-Type-Options"</span><span class="punct">:</span> <span class="str">"nosniff"</span><span class="punct">,</span>
+    <span class="key">"X-Frame-Options"</span><span class="punct">:</span> <span class="str">"SAMEORIGIN"</span><span class="punct">,</span>
+    <span class="key">"Content-Security-Policy"</span><span class="punct">:</span> <span class="str">"default-src 'self'"</span><span class="punct">,</span>
+    <span class="key">"Referrer-Policy"</span><span class="punct">:</span> <span class="str">"strict-origin..."</span><span class="punct">,</span>
+    <span class="key">"Permissions-Policy"</span><span class="punct">:</span> <span class="str">"camera=(), ..."</span>
+  <span class="punct">}</span>
+<span class="punct">}</span></pre></div>
+            </div>
+            <ul class="security-list">
+                <li>
+                    <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    <div><strong>Force HTTPS</strong><span>HSTS with 1-year max-age and includeSubDomains</span></div>
+                </li>
+                <li>
+                    <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    <div><strong>Prevent XSS</strong><span>Content Security Policy restricts script and style sources</span></div>
+                </li>
+                <li>
+                    <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    <div><strong>Block clickjacking</strong><span>X-Frame-Options prevents embedding in iframes</span></div>
+                </li>
+                <li>
+                    <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    <div><strong>Deny device APIs</strong><span>Permissions-Policy blocks camera, mic, and geolocation</span></div>
+                </li>
+                <li>
+                    <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    <div><strong>Block sensitive files</strong><span>Routes return 404 for .py, .env, and .pem files</span></div>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div data-reveal>
+            <h2>Ship your site.<br><span class="accent">Securely.</span></h2>
+            <p>Fork the template, create an Azure resource, push. Your site is live with production-grade security in under two minutes.</p>
+            <div class="cta-actions">
+                <a href="https://github.com/bonevisionlabs/azure-swa-starter" class="btn-primary">
+                    Get Started
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <a href="https://github.com/bonevisionlabs/azure-swa-starter/blob/main/docs/setup.md" class="btn-ghost">Read the Docs</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer>
-        Built with Azure Static Web Apps
+        Built with <a href="https://azure.microsoft.com/products/app-service/static">Azure Static Web Apps</a> &middot; MIT License
     </footer>
 
+    <!-- Scripts -->
     <script>
+        // --- Theme Toggle ---
         const toggle = document.querySelector('.theme-toggle');
         toggle.addEventListener('click', () => {
             const html = document.documentElement;
             const isLight = html.hasAttribute('data-theme');
             if (isLight) {
                 html.removeAttribute('data-theme');
-                localStorage.setItem('app-theme', 'dark');
+                localStorage.setItem('swa-theme', 'dark');
             } else {
                 html.setAttribute('data-theme', 'light');
-                localStorage.setItem('app-theme', 'light');
+                localStorage.setItem('swa-theme', 'light');
             }
+        });
+
+        // --- Cursor Glow ---
+        const glow = document.getElementById('cursor-glow');
+        if (window.matchMedia('(pointer: fine)').matches) {
+            window.addEventListener('mousemove', (e) => {
+                glow.style.left = e.clientX + 'px';
+                glow.style.top = e.clientY + 'px';
+            });
+        } else {
+            glow.style.display = 'none';
+        }
+
+        // --- Scroll Reveal ---
+        const reveals = document.querySelectorAll('[data-reveal]');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, i * 100);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        reveals.forEach(el => observer.observe(el));
+
+        // --- Smooth Scroll ---
+        document.querySelectorAll('[data-target]').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.getElementById(el.dataset.target);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    history.replaceState(null, '', window.location.pathname);
+                }
+            });
         });
     </script>
 </body>
