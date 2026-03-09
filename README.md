@@ -1,4 +1,4 @@
-# Azure SWA Starter
+# SWA Starter
 
 **Production-ready Azure Static Web Apps template with security, auth, and CI/CD pre-configured.**
 
@@ -7,7 +7,7 @@
 ## What's Included
 
 ```
-azure-swa-starter/
+swa-starter/
 ├── .github/workflows/
 │   └── azure-swa.yml              # CI/CD: deploy on push, PR previews
 ├── site/
@@ -27,7 +27,7 @@ azure-swa-starter/
 
 ```bash
 # Clone or use GitHub's "Use this template" button
-git clone https://github.com/bonevisionlabs/azure-swa-starter.git my-site
+git clone https://github.com/bonevisionlabs/swa-starter.git my-site
 cd my-site
 ```
 
