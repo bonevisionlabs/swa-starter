@@ -40,6 +40,7 @@ jobs:
           api_location: "api"        # Azure Functions API path (optional)
           output_location: ""        # Build output directory (empty = no build step)
           skip_app_build: true       # Set to false if you have a build step (React, Vue, etc.)
+          skip_deploy_on_missing_secrets: true  # Passes silently until you add AZURE_STATIC_WEB_APPS_API_TOKEN
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
