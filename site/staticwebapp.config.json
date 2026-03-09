@@ -1,0 +1,57 @@
+{
+  "trailingSlash": "never",
+  "routes": [
+    {
+      "route": "/login",
+      "rewrite": "/login.html"
+    },
+    {
+      "route": "/app",
+      "rewrite": "/app.html",
+      "allowedRoles": ["approved"]
+    },
+    {
+      "route": "/api/*",
+      "methods": ["GET", "POST"],
+      "allowedRoles": ["anonymous", "authenticated"]
+    },
+    {
+      "route": "/*.py",
+      "statusCode": 404
+    },
+    {
+      "route": "/*.env",
+      "statusCode": 404
+    },
+    {
+      "route": "/*.pem",
+      "statusCode": 404
+    }
+  ],
+  "globalHeaders": {
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'none'"
+  },
+  "responseOverrides": {
+    "401": {
+      "redirect": "/login",
+      "statusCode": 302
+    },
+    "403": {
+      "redirect": "/login?error=forbidden",
+      "statusCode": 302
+    },
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 404
+    }
+  },
+  "mimeTypes": {
+    ".json": "application/json",
+    ".woff2": "font/woff2"
+  }
+}
